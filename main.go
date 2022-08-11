@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/codegangsta/envy/lib"
-	"github.com/codegangsta/gin/lib"
 	shellwords "github.com/mattn/go-shellwords"
 	"github.com/urfave/cli"
 
@@ -205,7 +203,7 @@ func MainAction(c *cli.Context) {
 	build(builder, runner, logger)
 
 	// scan for changes
-	scanChanges(c.GlobalString("path"), c.GlobalStringSlice("excludeDir"), all, func(path string) {
+	scanChanges(c.GlobalString("bin"), c.GlobalString("path"), c.GlobalStringSlice("excludeDir"), all, func(path string) {
 		runner.Kill()
 		build(builder, runner, logger)
 	})
@@ -262,7 +260,7 @@ func build(builder gin.Builder, runner gin.Runner, logger *log.Logger) {
 
 type scanCallback func(path string)
 
-func scanChanges(watchPath string, excludeDirs []string, allFiles bool, cb scanCallback) {
+func scanChanges(bin string, watchPath string, excludeDirs []string, allFiles bool, cb scanCallback) {
 	for {
 		filepath.Walk(watchPath, func(path string, info os.FileInfo, err error) error {
 			if path == ".git" && info.IsDir() {
@@ -279,7 +277,11 @@ func scanChanges(watchPath string, excludeDirs []string, allFiles bool, cb scanC
 				return nil
 			}
 
-			if (allFiles || filepath.Ext(path) == ".go") && info.ModTime().After(startTime) {
+			if path == bin {
+				return nil
+			}
+
+			if (allFiles) && info.ModTime().After(startTime) {
 				cb(path)
 				startTime = time.Now()
 				return errors.New("done")
