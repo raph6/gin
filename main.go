@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/codegangsta/envy/lib"
+	"github.com/codegangsta/gin/lib"
 	shellwords "github.com/mattn/go-shellwords"
 	"github.com/urfave/cli"
 
